@@ -2,18 +2,25 @@
     "config": {
         "step": {
             "user": {
-                "title": "OpenAI STT Setup",
-                "description": "Please enter your OpenAI API key and optional settings",
+                "title": "OpenAI Speech-to-Text Setup",
+                "description": "Configure OpenAI STT integration. You'll need an OpenAI API key. The integration will use OpenAI's Whisper model for speech recognition.",
                 "data": {
                     "api_key": "OpenAI API Key",
-                    "model": "Whisper Model",
-                    "prompt": "Optional Prompt",
-                    "temperature": "Temperature (0-1)"
+                    "model": "Model (e.g. whisper-1)",
+                    "prompt": "Optional prompt to guide transcription",
+                    "temperature": "Temperature (0-1, higher values = more creative)"
                 }
             }
         },
         "error": {
-            "invalid_auth": "Invalid API key. Please check your OpenAI API key and try again."
+            "invalid_auth": "Invalid API key. Please check your OpenAI API key and try again.",
+            "already_configured": "This configuration is already set up with these settings.",
+            "unknown": "An unexpected error occurred. Please check the logs.",
+            "Model is required": "Please select a model for speech recognition.",
+            "Temperature must be a number between 0 and 1": "The temperature value must be between 0 and 1."
+        },
+        "abort": {
+            "already_configured": "This configuration is already set up with these settings."
         }
     }
 } 

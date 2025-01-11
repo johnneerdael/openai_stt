@@ -1,29 +1,18 @@
 """The OpenAI STT integration."""
 from __future__ import annotations
 
+from homeassistant.const import Platform
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
-from .provider import PLATFORM
-
 DOMAIN = "openai_stt"
+PLATFORMS: list[Platform] = [Platform.STT]
 
-async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up OpenAI STT from a config entry."""
-    # Clear any stuck state
-    if config_entry.state == ConfigEntry.SETUP_IN_PROGRESS:
-        hass.config_entries.async_setup_retry(config_entry)
-        return False
-
-    hass.data.setdefault(DOMAIN, {})
-    hass.data[DOMAIN][config_entry.entry_id] = config_entry.data
-    
-    # Load our platform
-    hass.async_create_task(
-        hass.config_entries.async_forward_entry_setup(config_entry, PLATFORM)
-    )
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
 
-async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry):
+async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
-    return await hass.config_entries.async_forward_entry_unload(config_entry, PLATFORM) 
+    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS) 
