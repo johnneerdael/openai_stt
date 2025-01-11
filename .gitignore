@@ -1,0 +1,4 @@
+core.config_entries
+*.pyc
+__pycache__/
+.storage/ 

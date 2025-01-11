@@ -1,0 +1,23 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "title": "OpenAI STT Setup",
+                "description": "Set up OpenAI STT integration. You'll need an OpenAI API key.",
+                "data": {
+                    "api_key": "OpenAI API Key",
+                    "model": "Whisper Model (e.g., whisper-1)",
+                    "prompt": "Optional Prompt",
+                    "temperature": "Temperature (0-1)"
+                }
+            }
+        },
+        "error": {
+            "invalid_auth": "Invalid API key",
+            "already_configured": "This OpenAI STT configuration is already set up"
+        },
+        "abort": {
+            "already_configured": "This OpenAI STT configuration is already set up"
+        }
+    }
+} 
