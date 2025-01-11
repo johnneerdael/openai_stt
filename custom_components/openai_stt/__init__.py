@@ -9,7 +9,9 @@ PLATFORMS = [Platform.STT]
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up OpenAI STT from a config entry."""
-    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    result = await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    if not result:
+        return False
     entry.async_on_unload(entry.add_update_listener(async_update_options))
     return True
 
