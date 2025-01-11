@@ -1,5 +1,5 @@
 core.config_entries
 *.pyc
 __pycache__/
-.storage/ 
-google-cloud/
+.storage/
+/google_cloud/
