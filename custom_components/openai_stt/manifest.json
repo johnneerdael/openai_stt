@@ -3,9 +3,9 @@
     "name": "OpenAI Speech-to-Text",
     "codeowners": ["@johnneerdael"],
     "config_flow": true,
-    "dependencies": [],
+    "dependencies": ["stt"],
     "documentation": "https://github.com/johnneerdael/openai_stt",
     "iot_class": "cloud_push",
     "requirements": ["openai"],
-    "version": "v1.5.0"
+    "version": "v1.6.0"
 } 
