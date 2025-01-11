@@ -1,4 +1,4 @@
-"""OpenAI STT provider implementation."""
+"""OpenAI STT platform for speech to text."""
 from __future__ import annotations
 
 import logging
@@ -8,18 +8,10 @@ import io
 
 import async_timeout
 from openai import OpenAI
-from homeassistant.components.stt import (
-    AudioBitRates,
-    AudioChannels,
-    AudioCodecs,
-    AudioFormats,
-    AudioSampleRates,
-    Provider,
-    SpeechMetadata,
-    SpeechResult,
-    SpeechResultState,
-)
+from homeassistant.components import stt
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -32,17 +24,26 @@ SUPPORTED_LANGUAGES = [
     "ta", "th", "tr", "uk", "ur", "vi", "cy",
 ]
 
-class OpenAISTTProvider(Provider):
-    """The OpenAI STT provider."""
+async def async_setup_entry(
+    hass: HomeAssistant,
+    config_entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+) -> None:
+    """Set up OpenAI STT from config entry."""
+    async_add_entities([OpenAISTTProvider(hass, config_entry)])
 
-    def __init__(self, hass, api_key, model, prompt, temperature) -> None:
+class OpenAISTTProvider(stt.SpeechToTextEntity):
+    """OpenAI STT provider."""
+
+    def __init__(self, hass: HomeAssistant, config_entry: ConfigEntry) -> None:
         """Initialize OpenAI STT provider."""
         self.hass = hass
         self._attr_name = "OpenAI STT"
-        self._model = model
-        self._api_key = api_key
-        self._prompt = prompt
-        self._temperature = temperature
+        self._attr_unique_id = f"{config_entry.entry_id[:7]}-stt"
+        self._model = config_entry.data.get("model", "whisper-1")
+        self._api_key = config_entry.data["api_key"]
+        self._prompt = config_entry.data.get("prompt", "")
+        self._temperature = config_entry.data.get("temperature", 0)
 
     @property
     def supported_languages(self) -> list[str]:
@@ -50,38 +51,41 @@ class OpenAISTTProvider(Provider):
         return SUPPORTED_LANGUAGES
 
     @property
-    def supported_formats(self) -> list[AudioFormats]:
+    def supported_formats(self) -> list[stt.AudioFormats]:
         """Return a list of supported formats."""
-        return [AudioFormats.WAV, AudioFormats.OGG]
+        return [stt.AudioFormats.WAV, stt.AudioFormats.OGG]
 
     @property
-    def supported_codecs(self) -> list[AudioCodecs]:
+    def supported_codecs(self) -> list[stt.AudioCodecs]:
         """Return a list of supported codecs."""
-        return [AudioCodecs.PCM, AudioCodecs.OPUS]
+        return [stt.AudioCodecs.PCM, stt.AudioCodecs.OPUS]
 
     @property
-    def supported_bit_rates(self) -> list[AudioBitRates]:
+    def supported_bit_rates(self) -> list[stt.AudioBitRates]:
         """Return a list of supported bitrates."""
-        return [AudioBitRates.BITRATE_16]
+        return [stt.AudioBitRates.BITRATE_16]
 
     @property
-    def supported_sample_rates(self) -> list[AudioSampleRates]:
+    def supported_sample_rates(self) -> list[stt.AudioSampleRates]:
         """Return a list of supported samplerates."""
-        return [AudioSampleRates.SAMPLERATE_16000]
+        return [stt.AudioSampleRates.SAMPLERATE_16000]
 
     @property
-    def supported_channels(self) -> list[AudioChannels]:
+    def supported_channels(self) -> list[stt.AudioChannels]:
         """Return a list of supported channels."""
-        return [AudioChannels.CHANNEL_MONO]
+        return [stt.AudioChannels.CHANNEL_MONO]
 
     async def async_process_audio_stream(
-        self, metadata: SpeechMetadata, stream: AsyncIterable[bytes]
-    ) -> SpeechResult:
+        self, metadata: stt.SpeechMetadata, stream: AsyncIterable[bytes]
+    ) -> stt.SpeechResult:
         """Process audio stream to text."""
-        # Collect data
+        _LOGGER.debug("process_audio_stream start")
+
         audio_data = b""
         async for chunk in stream:
             audio_data += chunk
+
+        _LOGGER.debug(f"process_audio_stream transcribe: {len(audio_data)} bytes")
 
         # OpenAI client with API Key
         client = OpenAI(api_key=self._api_key)
@@ -113,8 +117,9 @@ class OpenAISTTProvider(Provider):
             assert self.hass
             response = await self.hass.async_add_executor_job(job)
             if hasattr(response, 'text'):
-                return SpeechResult(
+                _LOGGER.info(f"process_audio_stream end: {response.text}")
+                return stt.SpeechResult(
                     response.text,
-                    SpeechResultState.SUCCESS,
+                    stt.SpeechResultState.SUCCESS,
                 )
-            return SpeechResult("", SpeechResultState.ERROR) 
+            return stt.SpeechResult("", stt.SpeechResultState.ERROR) 
