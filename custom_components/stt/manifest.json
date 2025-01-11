@@ -1,7 +1,7 @@
 {
     "domain": "stt",
     "name": "OpenAI Speech-to-Text",
-    "config_flow": true,
+    "config_flow": false,
     "documentation": "https://github.com/johnneerdael/openai_stt",
     "requirements": ["openai"],
     "ssdp": [],
