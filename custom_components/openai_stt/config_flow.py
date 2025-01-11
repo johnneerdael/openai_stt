@@ -5,8 +5,13 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
-from openai import OpenAI
-from homeassistant.helpers.selector import selector
+from openai import OpenAI, AsyncOpenAI
+from homeassistant.helpers.selector import (
+    NumberSelector,
+    NumberSelectorConfig,
+    SelectSelector,
+    SelectSelectorConfig,
+)
 from homeassistant.exceptions import HomeAssistantError
 import logging
 from typing import Any
@@ -20,6 +25,7 @@ from .const import (
     DEFAULT_MODEL,
     DEFAULT_PROMPT,
     DEFAULT_TEMP,
+    SUPPORTED_MODELS,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -27,9 +33,20 @@ _LOGGER = logging.getLogger(__name__)
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_API_KEY): str,
-        vol.Optional(CONF_MODEL, default=DEFAULT_MODEL): str,
+        vol.Optional(CONF_MODEL, default=DEFAULT_MODEL): SelectSelector(
+            SelectSelectorConfig(
+                options=SUPPORTED_MODELS,
+                mode="dropdown",
+            )
+        ),
         vol.Optional(CONF_PROMPT, default=DEFAULT_PROMPT): str,
-        vol.Optional(CONF_TEMP, default=DEFAULT_TEMP): float,
+        vol.Optional(CONF_TEMP, default=DEFAULT_TEMP): NumberSelector(
+            NumberSelectorConfig(
+                min=0.0,
+                max=1.0,
+                step=0.1,
+            )
+        ),
     }
 )
 
@@ -50,12 +67,13 @@ class OpenAISTTConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors = {}
 
         try:
-            # Test API key
-            client = OpenAI(api_key=user_input[CONF_API_KEY])
-            models = client.models.list()
+            # Test API key using AsyncOpenAI
+            client = AsyncOpenAI(api_key=user_input[CONF_API_KEY])
+            models = await client.models.list()
             if not any(model.id == user_input[CONF_MODEL] for model in models):
                 errors["base"] = "invalid_model"
-        except Exception:  # pylint: disable=broad-except
+        except Exception as ex:  # pylint: disable=broad-except
+            _LOGGER.error("Error connecting to OpenAI: %s", str(ex))
             errors["base"] = "cannot_connect"
         else:
             await self.async_set_unique_id(user_input[CONF_MODEL])
