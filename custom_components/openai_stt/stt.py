@@ -8,7 +8,6 @@ import io
 
 import async_timeout
 from openai import OpenAI
-from homeassistant.components import stt
 from homeassistant.components.stt import (
     AudioBitRates,
     AudioChannels,
@@ -18,10 +17,11 @@ from homeassistant.components.stt import (
     SpeechMetadata,
     SpeechResult,
     SpeechResultState,
-    Provider,
+    SpeechToTextEntity,
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.exceptions import MaxLengthExceeded
 
@@ -52,38 +52,24 @@ async def async_setup_entry(
         prompt=config_entry.data.get(CONF_PROMPT, DEFAULT_PROMPT),
         temperature=config_entry.data.get(CONF_TEMP, DEFAULT_TEMP),
     )
-    
-    provider = OpenAISTTProvider(hass, config_entry, engine)
-    async_add_entities([provider])
-    
-    await stt.async_register_engine(
-        hass,
-        DOMAIN,
-        "OpenAI STT",
-        provider.supported_languages
-    )
-    
-    config_entry.async_on_unload(
-        lambda: stt.async_unregister_engine(hass, DOMAIN)
-    )
+    async_add_entities([OpenAISTTProvider(config_entry, engine)])
 
-class OpenAISTTProvider(Provider):
+class OpenAISTTProvider(SpeechToTextEntity):
     """The OpenAI STT API provider."""
 
-    _attr_name = "OpenAI STT"
-    _attr_should_poll = False
-
-    def __init__(self, hass: HomeAssistant, config_entry: ConfigEntry, engine: OpenAISTTEngine) -> None:
+    def __init__(self, entry: ConfigEntry, engine: OpenAISTTEngine) -> None:
         """Initialize OpenAI STT provider."""
-        self.hass = hass
+        self._attr_unique_id = f"{entry.entry_id}"
+        self._attr_name = entry.title
+        self._attr_device_info = dr.DeviceInfo(
+            identifiers={(DOMAIN, entry.entry_id)},
+            manufacturer="OpenAI",
+            model="Whisper",
+            entry_type=dr.DeviceEntryType.SERVICE,
+        )
+        self._entry = entry
         self._engine = engine
-        self._model = config_entry.data.get(CONF_MODEL, DEFAULT_MODEL)
-        self._attr_unique_id = f"openai-stt-{config_entry.entry_id}"
-
-    @property
-    def name(self) -> str:
-        """Return provider name."""
-        return f"{self._attr_name} ({self._model})"
+        self._model = entry.data.get(CONF_MODEL, DEFAULT_MODEL)
 
     @property
     def supported_languages(self) -> list[str]:
