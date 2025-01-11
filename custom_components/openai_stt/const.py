@@ -1,6 +1,6 @@
 """Constants for the OpenAI STT integration."""
 
-DOMAIN = "openai_stt"
+DOMAIN = "stt"
 
 CONF_API_KEY = "api_key"
 CONF_MODEL = "model"

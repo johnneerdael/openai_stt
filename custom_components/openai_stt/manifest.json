@@ -1,5 +1,5 @@
 {
-    "domain": "openai_stt",
+    "domain": "stt",
     "name": "OpenAI Speech-to-Text",
     "config_flow": true,
     "documentation": "https://github.com/johnneerdael/openai_stt_ha",

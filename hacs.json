@@ -2,5 +2,5 @@
     "name": "OpenAI Speech-to-Text",
     "homeassistant": "2024.1.0",
     "render_readme": true,
-    "domains": ["openai_stt"]
+    "domains": ["stt"]
 }
