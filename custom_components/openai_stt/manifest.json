@@ -1,10 +1,13 @@
 {
-  "domain": "openai_stt",
-  "name": "OpenAI Wisper API",
-  "codeowners": ["@einToast"],
-  "documentation": "https://github.com/einToast/openai_stt_ha",
-  "iot_class": "cloud_polling",
-  "issue_tracker": "https://github.com/einToast/openai_stt_ha/issues",
-  "requirements": ["openai>=1.16.1"],
-  "version": "1.0.0"
-}
+    "domain": "openai_stt",
+    "name": "OpenAI Speech-to-Text",
+    "config_flow": true,
+    "documentation": "https://github.com/johnneerdael/openai_stt_ha",
+    "requirements": ["openai"],
+    "ssdp": [],
+    "zeroconf": [],
+    "homekit": {},
+    "dependencies": [],
+    "codeowners": ["@johnneerdael"],
+    "version": "1.0.0"
+} 

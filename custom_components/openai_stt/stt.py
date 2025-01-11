@@ -1,3 +1,4 @@
+"""OpenAI STT platform for speech to text."""
 from __future__ import annotations
 
 import logging
@@ -20,116 +21,58 @@ from homeassistant.components.stt import (
     SpeechResult,
     SpeechResultState,
 )
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
 
-import homeassistant.helpers.config_validation as cv
+from .const import (
+    CONF_API_KEY,
+    CONF_MODEL,
+    CONF_PROMPT,
+    CONF_TEMP,
+    DEFAULT_MODEL,
+    DEFAULT_PROMPT,
+    DEFAULT_TEMP,
+    DOMAIN,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
-
-CONF_API_KEY = "api_key"
-CONF_MODEL = "model"
-CONF_PROMPT = "prompt"
-CONF_TEMP = "temperature"
-
-DEFAULT_MODEL = "whisper-1"
-DEFAULT_PROMPT = ""
-DEFAULT_TEMP = 0
-
-SUPPORTED_MODELS = [
-    "whisper-1",
-]
+SUPPORTED_MODELS = ["whisper-1"]
 
 SUPPORTED_LANGUAGES = [
-    "af",
-    "ar",
-    "hy",
-    "az",
-    "be",
-    "bs",
-    "bg",
-    "ca",
-    "zh",
-    "hr",
-    "cs",
-    "da",
-    "nl",
-    "en",
-    "et",
-    "fi",
-    "fr",
-    "gl",
-    "de",
-    "el",
-    "he",
-    "hi",
-    "hu",
-    "is",
-    "id",
-    "it",
-    "ja",
-    "kn",
-    "kk",
-    "ko",
-    "lv",
-    "lt",
-    "mk",
-    "ms",
-    "mr",
-    "mi",
-    "ne",
-    "no",
-    "fa",
-    "pl",
-    "pt",
-    "ro",
-    "ru",
-    "sr",
-    "sk",
-    "sl",
-    "es",
-    "sw",
-    "sv",
-    "tl",
-    "ta",
-    "th",
-    "tr",
-    "uk",
-    "ur",
-    "vi",
-    "cy",
+    "af", "ar", "hy", "az", "be", "bs", "bg", "ca", "zh", "hr",
+    "cs", "da", "nl", "en", "et", "fi", "fr", "gl", "de", "el",
+    "he", "hi", "hu", "is", "id", "it", "ja", "kn", "kk", "ko",
+    "lv", "lt", "mk", "ms", "mr", "mi", "ne", "no", "fa", "pl",
+    "pt", "ro", "ru", "sr", "sk", "sl", "es", "sw", "sv", "tl",
+    "ta", "th", "tr", "uk", "ur", "vi", "cy",
 ]
 
-MODEL_SCHEMA = vol.In(SUPPORTED_MODELS)
-
-PLATFORM_SCHEMA = cv.PLATFORM_SCHEMA.extend({
-    vol.Required(CONF_API_KEY): cv.string,
-    vol.Optional(CONF_MODEL, default=DEFAULT_MODEL): cv.string,
-    vol.Optional(CONF_PROMPT, default=DEFAULT_PROMPT): cv.string,
-    vol.Optional(CONF_TEMP, default=CONF_TEMP): cv.positive_int,
-})
-
-
-async def async_get_engine(hass, config, discovery_info=None):
-    """Set up the OpenAI STT component."""
-    api_key = config[CONF_API_KEY]
-    model = config.get(CONF_MODEL, DEFAULT_MODEL)
-    prompt = config.get(CONF_PROMPT, DEFAULT_PROMPT)
-    temperature = config.get(CONF_TEMP, DEFAULT_TEMP)
-    return OpenAISTTProvider(hass, api_key, model, prompt, temperature)
+async def async_setup_entry(
+    hass: HomeAssistant, entry: ConfigEntry, async_add_devices
+) -> bool:
+    """Set up OpenAI STT from a config entry."""
+    provider = OpenAISTTProvider(
+        hass,
+        entry.data[CONF_API_KEY],
+        entry.data.get(CONF_MODEL, DEFAULT_MODEL),
+        entry.data.get(CONF_PROMPT, DEFAULT_PROMPT),
+        entry.data.get(CONF_TEMP, DEFAULT_TEMP),
+    )
+    async_add_devices([provider])
+    return True
 
 class OpenAISTTProvider(Provider):
     """The OpenAI STT provider."""
 
     def __init__(self, hass, api_key, model, prompt, temperature) -> None:
-        """Init OpenAI STT service."""
+        """Initialize OpenAI STT provider."""
         self.hass = hass
         self.name = "OpenAI STT"
-
         self._model = model
         self._api_key = api_key
         self._prompt = prompt
         self._temperature = temperature
-        
 
     @property
     def supported_languages(self) -> list[str]:
@@ -164,7 +107,7 @@ class OpenAISTTProvider(Provider):
     async def async_process_audio_stream(
         self, metadata: SpeechMetadata, stream: AsyncIterable[bytes]
     ) -> SpeechResult:
-
+        """Process audio stream to text."""
         # Collect data
         audio_data = b""
         async for chunk in stream:
@@ -182,7 +125,7 @@ class OpenAISTTProvider(Provider):
             wf.setframerate(metadata.sample_rate)
             wf.writeframes(audio_data)
         
-        file = ("wisper_audio.wav", wav_stream, "audio/wav")
+        file = ("whisper_audio.wav", wav_stream, "audio/wav")
 
         def job():
             # Create transcription
@@ -199,9 +142,9 @@ class OpenAISTTProvider(Provider):
         async with async_timeout.timeout(10):
             assert self.hass
             response = await self.hass.async_add_executor_job(job)
-            if response.text:
+            if hasattr(response, 'text'):
                 return SpeechResult(
                     response.text,
                     SpeechResultState.SUCCESS,
                 )
-            return SpeechResult("", SpeechResultState.ERROR)
+            return SpeechResult("", SpeechResultState.ERROR) 
