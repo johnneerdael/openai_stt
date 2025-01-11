@@ -1,16 +1,16 @@
 {
     "domain": "openai_stt",
     "name": "OpenAI STT",
-    "codeowners": ["@JohninNL"],
+    "codeowners": ["@johnneerdael"],
     "config_flow": true,
     "dependencies": ["stt"],
-    "documentation": "https://github.com/JohninNL/openai_stt_ha",
+    "documentation": "https://github.com/johnneeerdael/openai_stt",
     "iot_class": "cloud_polling",
-    "issue_tracker": "https://github.com/JohninNL/openai_stt_ha/issues",
+    "issue_tracker": "https://github.com/johnneerdael/openai_stt/issues",
     "requirements": [
         "openai>=1.0.0"
     ],
-    "version": "2.0.0",
+    "version": "2.0.1",
     "integrationtype": "service",
     "single_config_entry": true
 } 
