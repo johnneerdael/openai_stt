@@ -5,6 +5,7 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
+from homeassistant.exceptions import HomeAssistantError
 from openai import OpenAI, AsyncOpenAI
 from homeassistant.helpers.selector import (
     TextSelector,
@@ -65,8 +66,12 @@ class OpenAISTTConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_validate_input(self, user_input: dict[str, Any]) -> None:
         """Validate the user input allows us to connect."""
-        client = AsyncOpenAI(api_key=user_input[CONF_API_KEY])
-        await client.models.list()
+        try:
+            client = AsyncOpenAI(api_key=user_input[CONF_API_KEY])
+            await client.models.list()
+        except Exception as ex:
+            _LOGGER.error("Error validating API key: %s", str(ex))
+            raise CannotConnect from ex
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -77,9 +82,11 @@ class OpenAISTTConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             try:
                 await self.async_validate_input(user_input)
+            except CannotConnect:
+                errors["base"] = "cannot_connect"
             except Exception as ex:  # pylint: disable=broad-except
                 _LOGGER.exception("Unexpected exception: %s", ex)
-                errors["base"] = "cannot_connect"
+                errors["base"] = "unknown"
             else:
                 await self.async_set_unique_id(user_input[CONF_MODEL])
                 self._abort_if_unique_id_configured()
