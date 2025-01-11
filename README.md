@@ -6,50 +6,45 @@ This custom component integrates [OpenAI Speech-to-Text](https://openai.com/prod
 
 ### HACS
 
-You can install this integration via [HACS](https://hacs.xyz/).
-
 1. Go to HACS / Integrations / Three-dots menu / Custom repositories
 2. Add:
-   - Repository: `https://github.com/einToast/openai_stt_ha`
+   - Repository: `https://github.com/johnneerdael/openai_stt_ha`
    - Category: Integration
-3. Install the "OpenAI Whisper API" integration.
-4. Restart Home Assistant.
+3. Install the "OpenAI Speech-to-Text" integration
+4. Restart Home Assistant
 
 ### Manual
 
-1. Inside your `config` directory, create a new directory named `custom_components`.
-2. Create a new directory named `openai_stt` inside the `custom_components` directory.
-3. Place all the files from this repository in the `openai_stt` directory.
-4. Restart Home Assistant.
+1. Copy the `custom_components/openai_stt` directory to your Home Assistant's `custom_components` directory
+2. Restart Home Assistant
 
 ## Configuration
 
-You need to create an account on the [OpenAI website](https://platform.openai.com/signup) and get an [API key](https://platform.openai.com/api-keys) .
-Then add the following to your `configuration.yaml`:
+1. Go to Settings -> Devices & Services
+2. Click the "+ ADD INTEGRATION" button
+3. Search for "OpenAI Speech-to-Text"
+4. Follow the configuration steps:
+   - Enter your OpenAI API key (get one from [OpenAI API Keys](https://platform.openai.com/api-keys))
+   - Optional: Configure additional settings:
+     - Model: The Whisper model to use (default: whisper-1)
+     - Prompt: Optional prompt to guide the transcription
+     - Temperature: Value between 0-1 controlling response creativity (default: 0)
 
-```yaml
-stt:
-  - platform: openai_stt
-    api_key: YOUR_API_KEY
-    #  Optional parameters
-    model: whisper-1
-    prompt: ""
-    temperature: 0
-```
+## Options
 
-Parameters:
+- **API Key** (required): Your OpenAI API key
+- **Model** (optional): Currently only `whisper-1` is supported
+- **Prompt** (optional): A text prompt to guide the transcription. See [OpenAI documentation](https://platform.openai.com/docs/guides/speech-to-text/prompting)
+- **Temperature** (optional): Value between 0 and 1. Higher values make output more creative but less accurate (default: 0)
 
-- `api_key` (Required): Your OpenAI API key.
-- `model` (Optional): The model to use. The default is `whisper-1`. Currently, the only available model is `whisper-1`. The available models are listed [here](https://platform.openai.com/docs/models/whisper).
-- `prompt` (Optional): The prompt to use. The default is an empty string. See the [OpenAI documentation](https://platform.openai.com/docs/guides/speech-to-text/prompting) for more information.
-- `temperature` (Optional): The temperature to use between 0 and 1. The default is 0. A higher temperature will make the model more creative, but less accurate.
+## Supported Languages
 
-## Error
+This integration supports over 50 languages including: Arabic, Chinese, English, French, German, Italian, Japanese, Korean, Portuguese, Russian, Spanish, and many more.
 
-If you get the following error in the Home Assistant system log:
+## Support
 
-```
-The stt integration does not support any configuration parameters, got [{'platform': 'openai_stt', 'api_key': 'YOUR_API_KEY'}]. Please remove the configuration parameters from your configuration.
-```
+For bugs and feature requests, please [open an issue on GitHub](https://github.com/johnneerdael/openai_stt_ha/issues).
 
-This issues is a known [bug](https://github.com/home-assistant/core/issues/97161) in Home Assistant >= 2023.7. The reported message does not affect the functionality of this integration, it should still work.
+## License
+
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
