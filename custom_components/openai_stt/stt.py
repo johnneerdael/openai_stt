@@ -18,6 +18,7 @@ from homeassistant.components.stt import (
     SpeechMetadata,
     SpeechResult,
     SpeechResultState,
+    Provider,
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -51,9 +52,22 @@ async def async_setup_entry(
         prompt=config_entry.data.get(CONF_PROMPT, DEFAULT_PROMPT),
         temperature=config_entry.data.get(CONF_TEMP, DEFAULT_TEMP),
     )
-    async_add_entities([OpenAISTTProvider(hass, config_entry, engine)])
+    
+    provider = OpenAISTTProvider(hass, config_entry, engine)
+    async_add_entities([provider])
+    
+    await stt.async_register_engine(
+        hass,
+        DOMAIN,
+        "OpenAI STT",
+        provider.supported_languages
+    )
+    
+    config_entry.async_on_unload(
+        lambda: stt.async_unregister_engine(hass, DOMAIN)
+    )
 
-class OpenAISTTProvider(stt.SpeechToTextEntity):
+class OpenAISTTProvider(Provider):
     """The OpenAI STT API provider."""
 
     _attr_name = "OpenAI STT"
