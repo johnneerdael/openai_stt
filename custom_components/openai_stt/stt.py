@@ -77,31 +77,63 @@ async def async_setup_entry(
     config_entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up OpenAI speech-to-text."""
-    engine = OpenAISTTEngine(
-        api_key=config_entry.data[CONF_API_KEY],
-        model=config_entry.data.get(CONF_MODEL, DEFAULT_MODEL),
-        prompt=config_entry.data.get(CONF_PROMPT, DEFAULT_PROMPT),
-        temperature=config_entry.data.get(CONF_TEMP, DEFAULT_TEMP),
+    """Set up OpenAI STT platform from a config entry."""
+    api_key = config_entry.data[CONF_API_KEY]
+    model = config_entry.data.get(CONF_MODEL, DEFAULT_MODEL)
+    prompt = config_entry.data.get(CONF_PROMPT, DEFAULT_PROMPT)
+    temperature = config_entry.data.get(CONF_TEMP, DEFAULT_TEMP)
+
+    engine = OpenAISTTEngine(api_key, model, prompt, temperature)
+    
+    async_add_entities(
+        [
+            OpenAISTTProvider(
+                hass,
+                config_entry.entry_id,
+                engine,
+                config_entry.title,
+            )
+        ]
     )
-    async_add_entities([OpenAISTTProvider(config_entry, engine)])
 
 class OpenAISTTProvider(SpeechToTextEntity):
-    """The OpenAI STT API provider."""
+    """OpenAI STT provider."""
 
-    def __init__(self, entry: ConfigEntry, engine: OpenAISTTEngine) -> None:
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        entry_id: str,
+        engine: OpenAISTTEngine,
+        name: str,
+    ) -> None:
         """Initialize OpenAI STT provider."""
-        self._attr_unique_id = f"{entry.entry_id}"
-        self._attr_name = entry.title
-        self._attr_device_info = dr.DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            manufacturer="OpenAI",
-            model="Whisper",
-            entry_type=dr.DeviceEntryType.SERVICE,
-        )
-        self._entry = entry
+        self.hass = hass
+        self._attr_unique_id = f"{entry_id}_stt"
+        self._attr_name = name
         self._engine = engine
-        self._model = entry.data.get(CONF_MODEL, DEFAULT_MODEL)
+
+        self._attr_supported_languages = ["*"]
+        self._attr_supported_formats = [AudioFormats.WAV]
+        self._attr_supported_codecs = [AudioCodecs.PCM]
+        self._attr_supported_bit_rates = [AudioBitRates.BITRATE_16]
+        self._attr_supported_sample_rates = [
+            AudioSampleRates.SAMPLERATE_16000,
+            AudioSampleRates.SAMPLERATE_44100,
+        ]
+        self._attr_supported_channels = [
+            AudioChannels.CHANNEL_MONO,
+            AudioChannels.CHANNEL_STEREO,
+        ]
+
+    @property
+    def device_info(self) -> dr.DeviceInfo:
+        """Return device information about OpenAI STT."""
+        return dr.DeviceInfo(
+            identifiers={(DOMAIN, self.unique_id)},
+            name=self.name,
+            manufacturer="OpenAI",
+            model=self._engine._model,
+        )
 
     @property
     def supported_languages(self) -> list[str]:
