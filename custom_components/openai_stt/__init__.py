@@ -4,12 +4,17 @@ from __future__ import annotations
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
-from .stt import PLATFORM
+from .provider import PLATFORM
 
 DOMAIN = "openai_stt"
 
 async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     """Set up OpenAI STT from a config entry."""
+    # Clear any stuck state
+    if config_entry.state == ConfigEntry.SETUP_IN_PROGRESS:
+        hass.config_entries.async_setup_retry(config_entry)
+        return False
+
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][config_entry.entry_id] = config_entry.data
     
