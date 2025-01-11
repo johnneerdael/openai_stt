@@ -1,11 +1,11 @@
 {
     "domain": "openai_stt",
-    "name": "OpenAI Speech-to-Text",
+    "name": "OpenAI STT",
     "codeowners": ["@johnneerdael"],
     "config_flow": true,
     "dependencies": ["stt"],
     "documentation": "https://github.com/johnneerdael/openai_stt",
     "iot_class": "cloud_push",
     "requirements": ["openai"],
-    "version": "v1.6.0"
+    "version": "v1.7.0"
 } 

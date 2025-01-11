@@ -4,6 +4,8 @@ from __future__ import annotations
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
+from .stt import PLATFORM
+
 DOMAIN = "openai_stt"
 
 async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
@@ -11,12 +13,12 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][config_entry.entry_id] = config_entry.data
     
-    # Load stt platform
+    # Load our platform
     hass.async_create_task(
-        hass.config_entries.async_forward_entry_setup(config_entry, "stt")
+        hass.config_entries.async_forward_entry_setup(config_entry, PLATFORM)
     )
     return True
 
 async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     """Unload a config entry."""
-    return await hass.config_entries.async_forward_entry_unload(config_entry, "stt") 
+    return await hass.config_entries.async_forward_entry_unload(config_entry, PLATFORM) 

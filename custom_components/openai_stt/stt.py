@@ -15,6 +15,8 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 _LOGGER = logging.getLogger(__name__)
 
+PLATFORM = "openai_stt"
+
 SUPPORTED_LANGUAGES = [
     "af", "ar", "hy", "az", "be", "bs", "bg", "ca", "zh", "hr",
     "cs", "da", "nl", "en", "et", "fi", "fr", "gl", "de", "el",
@@ -34,6 +36,8 @@ async def async_setup_entry(
 
 class OpenAISTTProvider(stt.SpeechToTextEntity):
     """OpenAI STT provider."""
+
+    platform = PLATFORM
 
     def __init__(self, hass: HomeAssistant, config_entry: ConfigEntry) -> None:
         """Initialize OpenAI STT provider."""
