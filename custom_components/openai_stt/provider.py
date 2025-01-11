@@ -1,15 +1,13 @@
-"""OpenAI STT platform for speech to text."""
+"""OpenAI STT provider implementation."""
 from __future__ import annotations
 
 import logging
-import os
 from collections.abc import AsyncIterable
-from openai import OpenAI
 import wave
 import io
 
 import async_timeout
-import voluptuous as vol
+from openai import OpenAI
 from homeassistant.components.stt import (
     AudioBitRates,
     AudioChannels,
@@ -21,19 +19,7 @@ from homeassistant.components.stt import (
     SpeechResult,
     SpeechResultState,
 )
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-
-from .const import (
-    CONF_API_KEY,
-    CONF_MODEL,
-    CONF_PROMPT,
-    CONF_TEMP,
-    DEFAULT_MODEL,
-    DEFAULT_PROMPT,
-    DEFAULT_TEMP,
-    DOMAIN,
-)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -45,20 +31,6 @@ SUPPORTED_LANGUAGES = [
     "pt", "ro", "ru", "sr", "sk", "sl", "es", "sw", "sv", "tl",
     "ta", "th", "tr", "uk", "ur", "vi", "cy",
 ]
-
-async def async_setup_entry(
-    hass: HomeAssistant, entry: ConfigEntry, async_add_devices
-) -> bool:
-    """Set up OpenAI STT from a config entry."""
-    provider = OpenAISTTProvider(
-        hass,
-        entry.data[CONF_API_KEY],
-        entry.data.get(CONF_MODEL, DEFAULT_MODEL),
-        entry.data.get(CONF_PROMPT, DEFAULT_PROMPT),
-        entry.data.get(CONF_TEMP, DEFAULT_TEMP),
-    )
-    async_add_devices([provider], True)
-    return True
 
 class OpenAISTTProvider(Provider):
     """The OpenAI STT provider."""
