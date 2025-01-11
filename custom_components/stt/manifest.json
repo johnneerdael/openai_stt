@@ -1,1 +1,14 @@
- 
+{
+    "domain": "stt",
+    "name": "OpenAI Speech-to-Text",
+    "config_flow": true,
+    "documentation": "https://github.com/johnneerdael/openai_stt",
+    "requirements": ["openai"],
+    "ssdp": [],
+    "zeroconf": [],
+    "homekit": {},
+    "dependencies": [],
+    "codeowners": ["@johnneerdael"],
+    "version": "v1.1.0",
+    "iot_class": "cloud_push"
+} 
