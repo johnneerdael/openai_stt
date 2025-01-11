@@ -4,6 +4,8 @@ import logging
 _LOGGER = logging.getLogger(__package__)
 
 DOMAIN = "openai_stt"
+TITLE = "OpenAI STT"
+
 DEFAULT_MODEL = "whisper-1"
 DEFAULT_PROMPT = ""
 DEFAULT_TEMP = 0.0
