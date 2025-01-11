@@ -37,7 +37,6 @@ class OpenAISTTProvider(Provider):
 
     def __init__(self, hass, api_key, model, prompt, temperature) -> None:
         """Initialize OpenAI STT provider."""
-        super().__init__()
         self.hass = hass
         self._attr_name = "OpenAI STT"
         self._model = model

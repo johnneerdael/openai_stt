@@ -3,7 +3,6 @@ from __future__ import annotations
 
 from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.components import stt
 
 from .const import DOMAIN
 from .provider import OpenAISTTProvider
@@ -11,7 +10,6 @@ from .provider import OpenAISTTProvider
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up OpenAI STT from a config entry."""
     hass.data.setdefault(DOMAIN, {})
-    hass.data[DOMAIN][entry.entry_id] = entry.data
 
     provider = OpenAISTTProvider(
         hass,
@@ -21,17 +19,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         entry.data.get("temperature", 0),
     )
 
-    # Register provider directly with STT integration
-    stt.async_register_stt_provider(hass, DOMAIN, provider)
+    # Store provider instance in hass.data
+    hass.data[DOMAIN][entry.entry_id] = provider
+
+    # Register provider with STT
+    hass.config_entries.async_register_platform(entry, "stt", provider)
 
     return True
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
-    # Unregister provider
-    stt.async_unregister_stt_provider(hass, DOMAIN)
-    
-    # Remove data
-    hass.data[DOMAIN].pop(entry.entry_id)
-    
+    if provider := hass.data[DOMAIN].pop(entry.entry_id, None):
+        # Unregister provider from STT
+        hass.config_entries.async_unregister_platform(entry, "stt", provider)
     return True 
